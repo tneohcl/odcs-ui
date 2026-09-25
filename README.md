@@ -26,7 +26,7 @@ Design principles, the Apple HIG layer, component states and layout rules are in
 | Widget | Behaviour |
 |---|---|
 | `ViewSwitch` | Segmented view switch (Status / Restore). Quiet raised selection, never the accent; arrow keys move; selection changes colour only, so nothing shifts |
-| `SettingsList` + `SettingRow` | Grouped settings. Each row is a real button (focus, Space/Enter, accessible name "Label: value. Change") with a chevron; long values wrap instead of truncating; `setValue(text, "error")` colours the value while the words carry the meaning |
+| `SettingsList` + `SettingRow` | Grouped settings, two lines per row: label, then the value (wraps, never truncates) with an optional status dot; optional leading icon; chevron. Each row is a real button (focus, Space/Enter, accessible name "Label: value. Change"). `setValue(text, "error", indicator="error")` colours the value and shows a dot while the words carry the meaning |
 | `StatusFacts` | Separate facts with their own result and date (backup completed / integrity checked / recovery tested). Never-happened facts read "Not yet recorded"; optional action button per fact |
 | `StatusIcon` | Painted ok / warning / error / never / info glyphs in the live theme's colours |
 | `CollapsibleSection` | Leading ▸/▾, collapses to the header only |
@@ -39,7 +39,7 @@ Plain `QWidget` windows get the theme background with `theming.set_surface(widge
 ## Use it in a Qt app
 
 ```bash
-/path/to/app/.venv/bin/pip install "odcs-ui @ git+https://github.com/tneohcl/odcs-ui@v0.3.0"
+/path/to/app/.venv/bin/pip install "odcs-ui @ git+https://github.com/tneohcl/odcs-ui@v0.4.0"
 ```
 
 ```python
@@ -78,7 +78,7 @@ QT_QPA_PLATFORM=offscreen python3 -m unittest tests.test_qt tests.test_widgets  
 - **0.3 (done):** keyboard-only focus ring (`FocusVisibleFilter`, installed by `ThemeController`;
   base.qss styles `[focusVisible="true"]`, never plain `:focus`); no separator under the last
   status fact. Keep and VeloCoder run on it (toolbar model, menu bar everywhere).
-- **Next:** movieapp adopts `odcs.css`.
+- **0.4 (done):** two-line `SettingRow` (label over value), optional leading icon, `StatusDot` indicator.
 
 ## License
 

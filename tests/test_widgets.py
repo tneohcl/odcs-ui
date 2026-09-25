@@ -77,6 +77,35 @@ class SettingsTests(unittest.TestCase):
         second = box.addRow("Schedule", "Daily")
         self.assertEqual((first.property("last"), second.property("last")), ("false", "true"))
 
+    def test_two_lines_label_above_value(self):
+        box = widgets.SettingsList()
+        row = box.addRow("Destination", "TITAN-i")
+        box.resize(280, 200)
+        box.show()
+        APP.processEvents()
+        self.assertGreater(row._value.geometry().top(), row._label.geometry().top())
+        self.assertEqual(row._value.geometry().left(), row._label.geometry().left())
+        box.close()
+
+    def test_indicator_dot_is_optional_and_never_alone(self):
+        row = widgets.SettingRow("Destination", "TITAN-i")
+        self.assertIsNone(row.indicator())
+        row.setValue("TITAN-i · Connected", indicator="ok")
+        self.assertEqual(row.indicator(), "ok")
+        self.assertIn("Connected", row.accessibleName())  # the words carry it
+        row.setValue("TITAN-i · Not connected", "error", indicator="error")
+        self.assertEqual(row.indicator(), "error")
+        row.setValue("TITAN-i")
+        self.assertIsNone(row.indicator())
+
+    def test_leading_icon_column_keeps_rows_aligned(self):
+        from PySide6.QtGui import QIcon
+        box = widgets.SettingsList()
+        with_icon = box.addRow("Folders", "5 folders", icon=QIcon())  # null: column kept, empty
+        without = widgets.SettingRow("Plain", "row")
+        self.assertFalse(with_icon._icon.isHidden())
+        self.assertTrue(without._icon.isHidden())
+
     def test_value_state_colours_but_words_carry_meaning(self):
         row = widgets.SettingRow("Destination", "TITAN-i")
         row.setValue("Offline", "error")

@@ -91,7 +91,9 @@ fallback: `--odcs-accent: AccentColor;` inside `@supports (color: AccentColor)`.
 - **Type:** the system font at the system size is **body**. The scale (ratio 1.2) is
   *caption* = body − 1 pt (never smaller), *body*, *section title* = body + 1 pt semibold (600),
   *page title* = body × 1.44, weight 700. Maximum four sizes per screen. Use pt, never px,
-  so the desktop's font scaling and DPI apply.
+  so the desktop's font scaling and DPI apply. The **app name** (at the leading end of the
+  toolbar, and in the About dialog) is the brand: body × 1.6, weight 700 (16 pt at a 10 pt
+  body). It sits outside the four-size limit.
 
 ## Components
 

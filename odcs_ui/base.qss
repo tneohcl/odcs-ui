@@ -5,6 +5,16 @@
    have no outline), so it never shifts layout either. */
 
 QMainWindow, QDialog { background: $BG_WINDOW; color: $TEXT_PRIMARY; }
+/* Text colour everywhere comes from the tokens, not the system palette, so a
+   forced Dark/Light choice can't leave system-coloured text behind. */
+QWidget { color: $TEXT_PRIMARY; }
+/* Pseudo-states only work on the last part of a Qt selector, so disabled
+   text is one plain rule (children of a disabled widget are disabled too). */
+QLabel:disabled { color: $TEXT_DISABLED; }
+/* Plain QWidget windows and panels opt in with the odcsSurface property
+   (odcs_ui.theming.set_surface). */
+*[odcsSurface="window"] { background: $BG_WINDOW; }
+*[odcsSurface="panel"] { background: $BG_PANEL; }
 QToolTip { background: $BG_PANEL; color: $TEXT_PRIMARY; border: 1px solid $BORDER_OUTER; padding: 4px 6px; }
 
 /* Buttons -------------------------------------------------------------- */
@@ -90,3 +100,60 @@ QMenuBar::item:selected, QMenu::item:selected { background: $SELECTION_BG; color
 QMenu { background: $BG_PANEL; color: $TEXT_PRIMARY; border: 1px solid $BORDER_OUTER; padding: 4px; }
 QMenu::item:disabled { color: $TEXT_DISABLED; }
 QMenu::separator { height: 1px; background: $BORDER; margin: 4px 8px; }
+
+/* ODCS widgets (odcs_ui.widgets) ----------------------------------------------
+   Same rule as above: states change colors only. Selection never changes font
+   weight, which would change text width and shift the layout. */
+
+QLabel#odcsGroupHeading { color: $TEXT_SECONDARY; font-weight: 600; padding: 0 8px; }
+
+QFrame#odcsViewSwitch { background: $BG_CONTROL; border-radius: 6px; }
+QFrame#odcsViewSwitch QPushButton#odcsSegment {
+    min-height: 22px;
+    padding: 0 14px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    color: $TEXT_SECONDARY;
+}
+QFrame#odcsViewSwitch QPushButton#odcsSegment:hover { background: $HOVER_BG; color: $TEXT_PRIMARY; }
+QFrame#odcsViewSwitch QPushButton#odcsSegment:pressed { background: $BG_CONTROL_PRESSED; color: $TEXT_PRIMARY; }
+QFrame#odcsViewSwitch QPushButton#odcsSegment:checked { background: $BG_PANEL; border-color: $BORDER_STRONG; color: $TEXT_PRIMARY; }
+QFrame#odcsViewSwitch QPushButton#odcsSegment:focus { border-color: $ACCENT; }
+QFrame#odcsViewSwitch QPushButton#odcsSegment:disabled { color: $TEXT_DISABLED; }
+
+QFrame#odcsSettingsList { background: $BG_PANEL; border: 1px solid $BORDER; border-radius: 8px; }
+QPushButton#odcsSettingRow {
+    min-height: 0;
+    padding: 0;
+    border: 1px solid transparent;
+    border-bottom-color: $BORDER;
+    border-radius: 0;
+    background: transparent;
+    text-align: left;
+}
+QPushButton#odcsSettingRow:hover { background: $HOVER_BG; }
+QPushButton#odcsSettingRow:pressed { background: $BG_CONTROL_PRESSED; }
+QPushButton#odcsSettingRow:focus { border-color: $ACCENT; }
+QPushButton#odcsSettingRow[last="true"] { border-bottom-color: transparent; }
+QPushButton#odcsSettingRow[last="true"]:focus { border-color: $ACCENT; }
+QLabel#odcsChevron { color: $TEXT_SECONDARY; }
+
+QFrame#odcsFactCell { border: none; border-bottom: 1px solid $BORDER; }
+
+QPushButton#odcsSectionHeader {
+    min-height: 0;
+    padding: 4px 6px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    color: $TEXT_PRIMARY;
+    font-weight: 600;
+    text-align: left;
+}
+QPushButton#odcsSectionHeader:checked { background: transparent; border-color: transparent; }
+QPushButton#odcsSectionHeader:hover, QPushButton#odcsSectionHeader:checked:hover { background: $HOVER_BG; }
+QPushButton#odcsSectionHeader:pressed { background: $BG_CONTROL_PRESSED; }
+QPushButton#odcsSectionHeader:focus { border-color: $ACCENT; }
+
+QLabel#odcsAboutName { font-size: 16pt; font-weight: 700; }

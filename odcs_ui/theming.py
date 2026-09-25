@@ -27,6 +27,20 @@ BASE_QSS = Path(__file__).with_name("base.qss")
 
 _TOKEN = re.compile(r"\$([A-Z][A-Z0-9_]*)")
 
+# Tokens of the most recently applied theme, for widgets that paint colors
+# themselves (status icons). Set by ThemeController.apply().
+_CURRENT: dict[str, str] = {}
+
+
+def current_tokens() -> dict[str, str]:
+    """The active theme's tokens; before any ThemeController has applied, the
+    dark theme with its fallback accent."""
+    if _CURRENT:
+        return dict(_CURRENT)
+    values = tokens.theme("dark")
+    values["TEXT_ON_ACCENT"] = color.on_accent(values["ACCENT"])
+    return values
+
 
 def resolve_theme(choice: str, app: QApplication | None = None) -> str:
     """"dark"/"light" pass through; "system" follows the desktop: the Qt color
@@ -113,6 +127,8 @@ class ThemeController(QObject):
                 values.update(self.extra_tokens(name, values))
             qss = "\n".join(render(p.read_text(encoding="utf-8"), values) for p in self.stylesheets)
             self.theme_name, self.values = name, values
+            _CURRENT.clear()
+            _CURRENT.update(values)
             if qss != self._applied:
                 self._applied = qss
                 self.app.setStyleSheet(qss)
@@ -129,6 +145,15 @@ class ThemeController(QObject):
         if obj is self.app and event.type() in (QEvent.ApplicationPaletteChange, QEvent.PaletteChange):
             self._on_system_change()
         return False
+
+
+def set_surface(widget, surface: str = "window") -> None:
+    """Give a plain QWidget the window or panel background (QMainWindow and
+    QDialog get BG_WINDOW automatically)."""
+    widget.setProperty("odcsSurface", surface)
+    widget.setAttribute(Qt.WA_StyledBackground, True)
+    widget.style().unpolish(widget)
+    widget.style().polish(widget)
 
 
 def set_role(widget, role: str) -> None:

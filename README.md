@@ -15,7 +15,7 @@ Design principles, the Apple HIG layer, component states and layout rules are in
 | `odcs_ui.tokens` | no | Loads the tokens; `DARK`, `LIGHT`, `THEMES` match the per-app `themes.py` it replaces |
 | `odcs_ui.color` | no | WCAG luminance and contrast, compositing, `on_accent()` (black or white on any accent), `readable()` fallback |
 | `odcs_ui.web` | no | Generates `web/odcs.css`: CSS custom properties, OS dark mode, and the OS accent via `AccentColor` |
-| `odcs_ui.theming` | yes | `ThemeController`: Dark / Light / Match System, desktop accent, live switching, `$TOKEN` QSS rendering that fails loudly on typos |
+| `odcs_ui.theming` | yes | `ThemeController`: Dark / Light / Match System, desktop accent, live switching, `$TOKEN` QSS rendering that fails loudly on typos, keyboard-only focus ring |
 | `odcs_ui/base.qss` | yes | Base stylesheet implementing the component states (normal, hover, pressed, checked, disabled, focus) with constant geometry |
 | `odcs_ui.timefmt` | yes | `friendly_clock()` / `friendly_datetime()` in the desktop locale's own format |
 | `odcs_ui.widgets` | yes | **0.2:** `ViewSwitch`, `SettingsList`/`SettingRow`, `StatusFacts`, `CollapsibleSection`, `EmptyState`, `AboutDialog` |
@@ -39,7 +39,7 @@ Plain `QWidget` windows get the theme background with `theming.set_surface(widge
 ## Use it in a Qt app
 
 ```bash
-/path/to/app/.venv/bin/pip install "odcs-ui @ git+https://github.com/tneohcl/odcs-ui@v0.2.0"
+/path/to/app/.venv/bin/pip install "odcs-ui @ git+https://github.com/tneohcl/odcs-ui@v0.3.0"
 ```
 
 ```python
@@ -75,7 +75,10 @@ QT_QPA_PLATFORM=offscreen python3 -m unittest tests.test_qt tests.test_widgets  
 ## Roadmap
 
 - **0.2 (done):** the shared widgets above.
-- **0.3:** Keep and VeloCoder migrate onto odcs-ui (toolbar model, menus); movieapp adopts `odcs.css`.
+- **0.3 (done):** keyboard-only focus ring (`FocusVisibleFilter`, installed by `ThemeController`;
+  base.qss styles `[focusVisible="true"]`, never plain `:focus`); no separator under the last
+  status fact. Keep and VeloCoder run on it (toolbar model, menu bar everywhere).
+- **Next:** movieapp adopts `odcs.css`.
 
 ## License
 

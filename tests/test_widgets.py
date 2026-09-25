@@ -97,6 +97,14 @@ class StatusFactsTests(unittest.TestCase):
         self.assertEqual(facts.whenText("backup"), "Today at 8:51 AM")
         self.assertIsNotNone(facts.facts["recovery"]["action"])
 
+    def test_only_the_last_fact_drops_its_separator(self):
+        facts = widgets.StatusFacts()
+        facts.addFact("backup", "Backup completed")
+        facts.addFact("recovery", "Recovery tested", action=("Test recovery…", lambda: None))
+        first, last = facts._rows
+        self.assertEqual({c.property("last") for c in first}, {"false"})
+        self.assertEqual({c.property("last") for c in last}, {"true"})
+
     def test_status_icons_paint_in_every_state(self):
         for state in ("ok", "warning", "error", "never", "info"):
             with self.subTest(state=state):

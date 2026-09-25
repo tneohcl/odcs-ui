@@ -114,7 +114,9 @@ Every interactive component defines **normal, hover, pressed, checked/selected, 
 keyboard focus**. Geometry is constant across states: same height, padding, radius, and a
 border that is always present (transparent when unseen) at a fixed width (1 px; checkbox
 1.5 px). Only colors change. Focus is a 2 px accent **outline** outside the control (inset on
-list rows), shown for keyboard focus only and never removed. Disabled uses TEXT_DISABLED on
+list rows), shown for keyboard focus only and never removed. In Qt that means `[focusVisible="true"]` (set by
+`FocusVisibleFilter` when focus arrives by Tab or Shift+Tab), never plain `:focus`, which
+also fires on a click or when the window is re-activated. Disabled uses TEXT_DISABLED on
 BG_CONTROL, ignores hover and press, and states its reason nearby or in a tooltip. See the
 "Component states" board.
 

@@ -7,7 +7,7 @@ from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtCore import QLocale  # noqa: E402
+from PySide6.QtCore import QEvent, QLocale, Qt  # noqa: E402
 from PySide6.QtGui import QColor, QPalette  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
@@ -89,6 +89,40 @@ class Controller(unittest.TestCase):
 
     def test_theme_choices_are_the_shared_vocabulary(self):
         self.assertEqual(theming.THEME_CHOICES, [("dark", "Dark"), ("light", "Light"), ("system", "Match System")])
+
+
+class FocusVisible(unittest.TestCase):
+    """Keyboard-only focus ring: Tab shows it, a click or re-activation doesn't."""
+
+    def _focus(self, widget, reason):
+        from PySide6.QtGui import QFocusEvent
+        QApplication.sendEvent(widget, QFocusEvent(QEvent.Type.FocusIn, reason))
+
+    def test_tab_shows_the_ring_and_a_click_does_not(self):
+        from PySide6.QtWidgets import QPushButton
+        theming.install_focus_visible(APP)
+        button = QPushButton("Back up now")
+        self._focus(button, Qt.FocusReason.TabFocusReason)
+        self.assertTrue(button.property("focusVisible"))
+        QApplication.sendEvent(button, QFocusEvent_out())
+        self.assertFalse(button.property("focusVisible"))
+        self._focus(button, Qt.FocusReason.MouseFocusReason)
+        self.assertFalse(button.property("focusVisible"))
+        self._focus(button, Qt.FocusReason.ActiveWindowFocusReason)
+        self.assertFalse(button.property("focusVisible"))
+
+    def test_installed_once_by_the_controller(self):
+        self.assertIs(theming.install_focus_visible(APP), theming.install_focus_visible(APP))
+
+    def test_base_qss_never_uses_plain_focus(self):
+        qss = theming.BASE_QSS.read_text(encoding="utf-8").replace("::item:focus", "")
+        self.assertNotRegex(qss, r":focus\b")
+        self.assertIn('[focusVisible="true"]', qss)
+
+
+def QFocusEvent_out():
+    from PySide6.QtGui import QFocusEvent
+    return QFocusEvent(QEvent.Type.FocusOut, Qt.FocusReason.OtherFocusReason)
 
 
 class Times(unittest.TestCase):

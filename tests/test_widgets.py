@@ -155,6 +155,28 @@ class StatusFactsTests(unittest.TestCase):
         self.assertEqual({c.property("last") for c in first}, {"false"})
         self.assertEqual({c.property("last") for c in last}, {"true"})
 
+    def test_action_sits_under_its_description_aligned_with_it(self):
+        facts = widgets.StatusFacts()
+        facts.addFact("backup", "Backup completed", "Your selected files were saved")
+        facts.addFact("recovery", "Recovery tested", "Restore one file using only your passphrase",
+                      action=("Test recovery…", lambda: None))
+        facts.resize(700, 200)
+        facts.show()
+        APP.processEvents()
+        fact = facts.facts["recovery"]
+        description, button, when = fact["description"], fact["action"], fact["when"]
+
+        def box(widget):
+            top_left = widget.mapTo(facts, widget.rect().topLeft())
+            return top_left.x(), top_left.y(), widget.height()
+        dx, dy, dh = box(description)
+        bx, by, _ = box(button)
+        self.assertEqual(bx, dx)                   # same left edge as the description
+        self.assertGreaterEqual(by, dy + dh)       # on its own line below it
+        self.assertEqual(box(when)[1], dy)         # the date stays level with the first line
+        self.assertEqual(box(facts.facts["backup"]["when"])[0], box(when)[0])   # one date column
+        facts.close()
+
     def test_status_icons_paint_in_every_state(self):
         for state in ("ok", "warning", "error", "never", "info"):
             with self.subTest(state=state):

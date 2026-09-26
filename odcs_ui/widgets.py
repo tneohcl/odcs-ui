@@ -353,7 +353,7 @@ class StatusFacts(QFrame):
             lay.setSpacing(6)
             # Top-aligned, so a two-line fact keeps its icon, title and date
             # level with the first line.
-            lay.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+            lay.setAlignment(Qt.AlignTop)
             lay.addWidget(widget)
             if widget is desc_label and button is not None:
                 # The fact's action sits under its description, on the same

@@ -175,6 +175,10 @@ class StatusFactsTests(unittest.TestCase):
         self.assertGreaterEqual(by, dy + dh)       # on its own line below it
         self.assertEqual(box(when)[1], dy)         # the date stays level with the first line
         self.assertEqual(box(facts.facts["backup"]["when"])[0], box(when)[0])   # one date column
+        for key in ("backup", "recovery"):         # descriptions use the column, never clipped
+            label = facts.facts[key]["description"]
+            self.assertGreater(label.width(), button.width() * 2, key)
+            self.assertGreaterEqual(label.height(), label.heightForWidth(label.width()), key)
         facts.close()
 
     def test_status_icons_paint_in_every_state(self):

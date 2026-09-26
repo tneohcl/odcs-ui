@@ -42,6 +42,27 @@ class ViewSwitchTests(unittest.TestCase):
         switch.close()
 
 
+    def test_inset_is_even_in_a_taller_row(self):
+        # The frame must hug its segments: stretched to a taller row (a toolbar
+        # with 36 px buttons), the gap above and below grew while the sides
+        # stayed at 2 px.
+        from PySide6.QtWidgets import QHBoxLayout, QWidget
+        row = QWidget()
+        layout = QHBoxLayout(row)
+        switch = widgets.ViewSwitch(["Status", "Restore"])
+        tall = QPushButton("Back up now")
+        tall.setMinimumHeight(40)
+        layout.addWidget(switch)
+        layout.addWidget(tall)
+        row.resize(420, 60)
+        row.show()
+        APP.processEvents()
+        frame, first, last = switch.rect(), switch.buttons()[0].geometry(), switch.buttons()[-1].geometry()
+        gaps = {"left": first.left(), "right": frame.right() - last.right(),
+                "top": first.top(), "bottom": frame.bottom() - first.bottom()}
+        self.assertEqual(len(set(gaps.values())), 1, gaps)
+        row.close()
+
 class SettingsTests(unittest.TestCase):
     def test_row_is_a_real_button_with_an_accessible_name(self):
         box = widgets.SettingsList("What's backed up")

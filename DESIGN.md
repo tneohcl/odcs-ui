@@ -134,6 +134,9 @@ before the primary action loses its label.
 - **Menu bar, then toolbar.** The toolbar carries labelled icons for frequent actions, a
   segmented control when the window switches views, and the **primary action at its trailing
   end** (Keep: Back up now; VeloCoder: Convert N Videos).
+- **When the views switch the sidebar too**, the segmented control heads the sidebar instead,
+  spanning exactly its cards' width with equal segments (`ViewSwitch(fill=True)`), so it sits
+  over what it changes. Keep does this: Status | Restore swaps both the sidebar and the page.
 - **Two panes:** a sidebar on the window color on the left (fixed width), content on the right.
 - **Dialogs** put their default button bottom-right (the OS decides the exact order).
 - Headline status at the top of the content; details as grouped lists, not cards.

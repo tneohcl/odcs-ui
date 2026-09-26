@@ -42,6 +42,29 @@ class ViewSwitchTests(unittest.TestCase):
         switch.close()
 
 
+    def test_fill_takes_the_width_and_splits_it_evenly(self):
+        # A sidebar switch lines up with the cards under it: the frame spans
+        # the width, and the segments are equal whatever their labels.
+        from PySide6.QtWidgets import QVBoxLayout, QWidget
+        panel = QWidget()
+        panel.setFixedWidth(300)
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(16, 16, 16, 16)
+        switch = widgets.ViewSwitch(["Status", "Restore"], fill=True)
+        layout.addWidget(switch)
+        panel.show()
+        APP.processEvents()
+        first, second = (b.geometry() for b in switch.buttons())
+        self.assertEqual(switch.geometry().width(), 300 - 32)          # the full width
+        self.assertLessEqual(abs(first.width() - second.width()), 1)   # equal, not sized by label
+        # It asks for room for its widest label, so a layout won't squeeze it.
+        widest = max(b.sizeHint().width() for b in switch.buttons())
+        self.assertGreaterEqual(switch.minimumSizeHint().width(), 2 * widest)
+        gaps = {"left": first.left(), "right": switch.rect().right() - second.right(),
+                "top": first.top(), "bottom": switch.rect().bottom() - first.bottom()}
+        self.assertEqual(len(set(gaps.values())), 1, gaps)   # still an even inset
+        panel.close()
+
     def test_inset_is_even_in_a_taller_row(self):
         # The frame must hug its segments: stretched to a taller row (a toolbar
         # with 36 px buttons), the gap above and below grew while the sides

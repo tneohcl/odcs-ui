@@ -5,6 +5,7 @@ import unittest
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtCore import Qt  # noqa: E402
+from PySide6.QtGui import QFont  # noqa: E402
 from PySide6.QtTest import QTest  # noqa: E402
 from PySide6.QtWidgets import QApplication, QLabel, QPushButton  # noqa: E402
 
@@ -85,6 +86,93 @@ class ViewSwitchTests(unittest.TestCase):
                 "top": first.top(), "bottom": frame.bottom() - first.bottom()}
         self.assertEqual(len(set(gaps.values())), 1, gaps)
         row.close()
+
+
+def _lines_fit(label, width):
+    """Lay the label's text out as QLabel's word wrap does; True if no line is
+    wider than `width` (a long unbreakable word would overflow and clip)."""
+    from PySide6.QtGui import QTextLayout, QTextOption
+    layout = QTextLayout(label.text(), label.font())
+    option = QTextOption()
+    option.setWrapMode(QTextOption.WordWrap)
+    layout.setTextOption(option)
+    layout.beginLayout()
+    widest = 0.0
+    while (line := layout.createLine()).isValid():
+        line.setLineWidth(width)
+        widest = max(widest, line.naturalTextWidth())
+    layout.endLayout()
+    return widest <= width
+
+
+class LargeTextRowTests(unittest.TestCase):
+    """Whatever the font size, a row fits the width it is given: long values
+    and labels wrap, even with no spaces, instead of widening the row.
+    Regression: at 14 pt (Windows) one hyphenated host name made a sidebar
+    card 71 px wider than its column."""
+
+    LONG = ("NAS share · Synology-DS920plus-Living-Room · /volume1/backups/"
+            "TITAN-i_home_terence_keep_repository_2026")
+
+    def run_at(self, points):
+        from PySide6.QtWidgets import QVBoxLayout, QWidget
+        font = APP.font()
+        self.addCleanup(APP.setFont, QFont(font))
+        if points:
+            font.setPointSize(points)
+            APP.setFont(font)
+        page = QWidget()
+        self.addCleanup(page.close)
+        layout = QVBoxLayout(page)
+        layout.setContentsMargins(16, 16, 16, 16)  # Keep's 300 px sidebar
+        box = self.box = widgets.SettingsList("What's backed up")
+        short = box.addRow("Folders", "5 folders")
+        long = box.addRow("Recovery access for this computer", self.LONG)
+        empty = box.addRow("Schedule", "")
+        layout.addWidget(box)
+        page.resize(300, 900)
+        page.show()
+        APP.processEvents()
+        return short, long, empty
+
+    def test_rows_fit_a_narrow_column_at_any_size(self):
+        for points in (0, 14, 22):
+            with self.subTest(points=points):
+                short, long, empty = self.run_at(points)
+                self.assertLessEqual(long.minimumSizeHint().width(), short.minimumSizeHint().width())
+                self.assertLessEqual(long.width(), 300 - 2 * 16)
+                for label in (long._label, long._value):
+                    self.assertTrue(_lines_fit(label, label.width()), label.text())
+                self.assertGreaterEqual(long.height(), long.heightForWidth(long.width()))
+                # and asks no more height than its rows need at that width
+                # (QLabel's squarish wrap guess made it hundreds of px taller)
+                self.assertLessEqual(self.box.minimumSizeHint().height(), self.box.heightForWidth(self.box.width()))
+
+    def test_ordinary_words_never_break(self):
+        for text in ("All application data", "Tested · not yet verified", "Internationalization"):
+            with self.subTest(text=text):
+                shown = widgets._wrappable(text)
+                self.assertEqual([word.strip("\u200b") for word in shown.split()], text.split())
+                self.assertNotIn("\u200b", "".join(shown.split("·\u200b")))
+        # An ID with no breaks splits every 20 characters, never at its end.
+        self.assertEqual(widgets._wrappable("a" * 40), "a" * 20 + "\u200b" + "a" * 20)
+        self.assertEqual(widgets._wrappable("a" * 41).count("\u200b"), 2)
+
+    def test_text_reads_back_unchanged(self):
+        short, long, empty = self.run_at(0)
+        self.assertEqual(long.value(), self.LONG)
+        self.assertEqual(long.accessibleName(), f"Recovery access for this computer: {self.LONG}. Change")
+        self.assertNotIn("​", long.accessibleName())
+        self.assertEqual(empty.value(), "")
+
+    def test_an_empty_value_keeps_the_row_height(self):
+        # Constant geometry: a row whose value has not loaded yet is as tall
+        # as it will be once it has, instead of collapsing to the label.
+        for points in (0, 14):
+            with self.subTest(points=points):
+                short, long, empty = self.run_at(points)
+                self.assertEqual(empty.height(), short.height())
+
 
 class SettingsTests(unittest.TestCase):
     def test_row_is_a_real_button_with_an_accessible_name(self):

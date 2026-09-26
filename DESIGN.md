@@ -129,6 +129,12 @@ destinations, 115–130% system text size, and a 960 × 640 window. Values wrap 
 rather than truncate essential information; the toolbar drops secondary labels (icon + tooltip)
 before the primary action loses its label.
 
+Text never sets a column's width. Setting rows and headings wrap into the width they are
+given at any text size, breaking after path and name separators (`/ - _ · :`) and, for a run
+with no break at all, every 20 characters; ordinary words never break. An empty value keeps
+its line, so a row is already as tall as it will be. A sidebar too short for its rows scrolls;
+it never squeezes them.
+
 ## Layout
 
 - **Menu bar, then toolbar.** The toolbar carries labelled icons for frequent actions, a

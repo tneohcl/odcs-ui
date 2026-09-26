@@ -103,6 +103,37 @@ class SettingsTests(unittest.TestCase):
         self.assertTrue(row.hasHeightForWidth())
         self.assertGreater(row.heightForWidth(240), row.heightForWidth(1200))
 
+    def test_a_wrapped_value_gets_its_full_height_in_a_list(self):
+        # Regression: a Fixed row in a Maximum box was capped at its one-line
+        # size hint, so the second line of a wrapped value was clipped.
+        from PySide6.QtWidgets import QVBoxLayout, QWidget
+        page = QWidget()
+        layout = QVBoxLayout(page)
+        box = widgets.SettingsList("Recovery")
+        row = box.addRow("Recovery access", "Tested")
+        layout.addWidget(box)
+        layout.addStretch(1)
+        page.resize(260, 600)
+        page.show()
+        APP.processEvents()
+        row.setValue("Tested · not yet verified · Synology-DS920plus-Living-Room")  # wraps after it is shown
+        APP.processEvents()
+        self.assertGreater(row.heightForWidth(row.width()), row.sizeHint().height())  # really wraps
+        self.assertGreaterEqual(row.height(), row.heightForWidth(row.width()))
+        self.assertGreaterEqual(row._value.height(), row._value.heightForWidth(row._value.width()))
+        page.close()
+
+    def test_rows_are_never_squeezed_below_their_size(self):
+        # Regression: the row's QSS `min-height: 0` made its minimum 2 px, so a
+        # short window squashed every row instead of honouring the list's size.
+        box = widgets.SettingsList("What's backed up")
+        rows = [box.addRow(label, "value") for label in ("Folders", "Applications", "Destination")]
+        box.show()
+        APP.processEvents()
+        needed = sum(row.sizeHint().height() for row in rows)
+        self.assertGreaterEqual(box.minimumSizeHint().height(), needed)
+        box.close()
+
     def test_row_label_uses_primary_text_colour(self):
         # Regression: a `:disabled` pseudo-state on an ancestor in a Qt selector
         # is invalid and greyed every row label. Labels must render TEXT_PRIMARY.

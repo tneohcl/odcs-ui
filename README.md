@@ -39,7 +39,7 @@ Plain `QWidget` windows get the theme background with `theming.set_surface(widge
 ## Use it in a Qt app
 
 ```bash
-/path/to/app/.venv/bin/pip install "odcs-ui @ git+https://github.com/tneohcl/odcs-ui@v0.4.5"
+/path/to/app/.venv/bin/pip install "odcs-ui @ git+https://github.com/tneohcl/odcs-ui@v0.4.6"
 ```
 
 ```python

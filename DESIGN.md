@@ -76,6 +76,12 @@ and `--odcs-*` CSS custom properties for the web.
 Themes: **Dark**, **Light**, **Match System** (default). The WCAG floor is enforced
 by a test in every app that consumes the tokens.
 
+**Desktop apps:** the accent comes from the desktop itself (`odcs_ui.desktop`):
+the settings portal's `accent-color` (GNOME, KDE; works in a Flatpak), then KDE's
+`kdeglobals` or LXQt's `lxqt.conf`, then Qt's palette, then the token value. Qt's
+palette alone isn't enough: PySide6's bundled Qt can't load the system's
+platform-theme plugin, so on LXQt it only ever held Qt's default blue.
+
 **Web:** the accent is CSS `AccentColor` (the OS accent) with the token value as
 fallback: `--odcs-accent: AccentColor;` inside `@supports (color: AccentColor)`.
 

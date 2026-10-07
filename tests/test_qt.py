@@ -3,6 +3,7 @@ import os
 import tempfile
 import unittest
 from datetime import datetime
+from unittest.mock import patch
 from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
@@ -11,7 +12,7 @@ from PySide6.QtCore import QEvent, QLocale, Qt  # noqa: E402
 from PySide6.QtGui import QColor, QPalette  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
-from odcs_ui import color, theming, timefmt, tokens  # noqa: E402
+from odcs_ui import color, desktop, theming, timefmt, tokens  # noqa: E402
 
 APP = QApplication.instance() or QApplication([])
 
@@ -32,6 +33,26 @@ class Resolve(unittest.TestCase):
 
 
 class AccentTokens(unittest.TestCase):
+    def setUp(self):
+        # The palette path: no accent from the desktop (the real one on the
+        # machine running the tests would otherwise win).
+        patcher = patch.object(desktop, "accent", return_value=None)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_desktop_accent_wins_over_the_palette(self):
+        # PySide6's bundled Qt never sees e.g. LXQt's palette, so its
+        # QPalette holds Qt's default blue while the desktop is mauve.
+        with patch.object(desktop, "accent", return_value="#cba6f7"):
+            values = theming.accent_tokens(palette_with_accent("#308cc6"), "#123456")
+        self.assertEqual(values["ACCENT"], "#cba6f7")
+        self.assertEqual(values["TEXT_ON_ACCENT"], color.on_accent("#cba6f7"))
+
+    def test_build_tokens_uses_the_desktop_accent(self):
+        with patch.object(desktop, "accent", return_value="#cba6f7"):
+            values = theming.build_tokens("dark", palette_with_accent("#308cc6"))
+        self.assertEqual(values["ACCENT"], "#cba6f7")
+
     def test_system_accent_drives_accent_family_and_on_accent(self):
         for accent, expected_on in (("#3daee9", color.DARK_ON_ACCENT), ("#0067c0", color.LIGHT_ON_ACCENT)):
             with self.subTest(accent=accent):
